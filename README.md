@@ -17,8 +17,8 @@ Para configurar o envio de emails usando Nodemailer e Gmail, você precisa atend
 
 - Node.js instalado
 - Conta do Gmail configurada
-- Verificação em Duas Etapas ativada na conta do Gmail
-- Senha de app gerada para a conta do Gmail
+- <a href="https://myaccount.google.com/security-checkup">Ativar verificação em duas etapas</a> ativada na conta do Gmail
+- <a href="https://myaccount.google.com/apppasswords">Gerar uma senha de app</a> para a conta do Gmail
 
 <h3 align="center">📝 Configuração das Variáveis de Ambiente</h3>
 
