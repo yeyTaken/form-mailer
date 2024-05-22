@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="./src/assets/images/ts/long_name.png" alt="Discord Logo" width="200">
+  <img src="./src/assets/images/ts/long_name.png" alt="TS Logo" width="200">
   <br>
   Configuração do Envio de Emails com Nodemailer e Gmail
   <br>
