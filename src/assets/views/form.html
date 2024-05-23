@@ -1,17 +1,205 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form Submission</title>
+    <title>Seleção de Papéis e Áreas</title>
+    <style>
+        /* Tema inspirado no Discord */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #36393f;
+            color: #dcddde;
+            padding: 20px;
+        }
+        form {
+            max-width: 400px;
+            margin: 0 auto;
+            background-color: #2f3136;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #b9bbbe;
+        }
+        select, input[type="text"], input[type="email"], input[type="submit"], textarea, input[type="date"] {
+            margin-bottom: 10px;
+            padding: 8px;
+            width: 100%;
+            background-color: #40444b;
+            color: #dcddde;
+            border: 1px solid #202225;
+            border-radius: 4px;
+            outline: none;
+        }
+        select:focus, input[type="text"]:focus, input[type="email"]:focus, textarea:focus, input[type="date"]:focus {
+            border-color: #7289da;
+        }
+        input[type="submit"] {
+            background-color: #7289da;
+            color: #dcddde;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        input[type="submit"]:hover {
+            background-color: #677bc4;
+        }
+        #discordUserInfo {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        #discordUserInfo img {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        #discordUserInfo p {
+            margin: 0;
+            font-size: 16px;
+        }
+    </style>
 </head>
 <body>
-    <form action="/submit" method="post">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name"><br>
+    <form id="roleForm" action="/confirm" method="GET">
+        <label for="fullName">Nome Completo:</label>
+        <input type="text" id="fullName" name="fullName" required><br>
+
         <label for="email">Email:</label>
-        <input type="email" id="email" name="email"><br>
-        <input type="submit" value="Submit">
+        <input type="email" id="email" name="email" required><br>
+
+        <label for="discordId">Discord ID (apenas números):</label>
+        <input type="text" id="discordId" name="discordId" pattern="[0-9]+" required><br>
+
+        <div id="discordUserInfo" style="display: none;">
+            <img id="discordAvatar" src="" alt="Avatar">
+            <p id="discordUsername"></p>
+        </div>
+
+        <label for="role">Escolha um papel:</label>
+        <select id="role" name="role" required>
+            <option value="">Selecione um papel</option>
+            <option value="staff">Staff</option>
+            <option value="programador">Programador</option>
+        </select><br>
+
+        <label for="area">Escolha uma área:</label>
+        <select id="area" name="area" disabled required>
+            <option value="">Selecione uma área</option>
+        </select><br>
+
+        <label for="reason">Motivo:</label>
+        <textarea id="reason" name="reason" rows="4" required></textarea><br>
+
+        <label for="birthdate">Data de Nascimento:</label>
+        <input type="date" id="birthdate" name="birthdate" required><br>
+
+        <input type="submit" value="Próximo">
     </form>
+
+    <script>
+        const data = {
+            "roles": [
+                {
+                    "role": "staff",
+                    "available": true,
+                    "areas": [
+                        {
+                            "area": "adm",
+                            "available": true
+                        },
+                        {
+                            "area": "mod",
+                            "available": true
+                        },
+                        {
+                            "area": "suporte",
+                            "available": true
+                        }
+                    ]
+                },
+                {
+                    "role": "programador",
+                    "available": true,
+                    "areas": [
+                        {
+                            "area": "full stack",
+                            "available": true
+                        },
+                        {
+                            "area": "front end",
+                            "available": true
+                        },
+                        {
+                            "area": "back end",
+                            "available": true
+                        }
+                    ]
+                }
+            ]
+        };
+
+        function populateAreas(role) {
+            const areaSelect = document.getElementById("area");
+            areaSelect.innerHTML = '<option value="">Selecione uma área</option>';
+            const selectedRole = data.roles.find(r => r.role === role);
+            if (selectedRole) {
+                selectedRole.areas.forEach(area => {
+                    const option = document.createElement("option");
+                    option.value = area.area;
+                    option.text = area.area;
+                    areaSelect.appendChild(option);
+                });
+                areaSelect.disabled = false;
+            } else {
+                areaSelect.disabled = true;
+            }
+        }
+
+        document.getElementById("role").addEventListener("change", function() {
+            const selectedRole = this.value;
+            populateAreas(selectedRole);
+        });
+
+        document.getElementById("discordId").addEventListener("change", function() {
+            const discordId = this.value;
+            fetch(`https://apiattt.discloud.app/user/${discordId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.user) {
+                        const userInfo = data.user;
+                        document.getElementById("discordAvatar").src = userInfo.avatarUrl;
+                        document.getElementById("discordUsername").textContent = userInfo.username;
+                        document.getElementById("discordUserInfo").style.display = "flex";
+                    } else {
+                        document.getElementById("discordUserInfo").style.display = "none";
+                        alert('Usuário não encontrado.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Erro ao verificar o usuário.');
+                });
+        });
+
+        document.getElementById("roleForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const fullName = document.getElementById("fullName").value;
+            const email = document.getElementById("email").value;
+            const discordId = document.getElementById("discordId").value;
+            const role = document.getElementById("role").value;
+            const area = document.getElementById("area").value;
+            const reason = document.getElementById("reason").value;
+            const birthdate = document.getElementById("birthdate").value;
+
+            // Redirecionar para a página de confirmação com os parâmetros
+            const url = `/confirm?id=${discordId}&fullName=${encodeURIComponent(fullName)}&email=${encodeURIComponent(email)}&role=${encodeURIComponent(role)}&area=${encodeURIComponent(area)}&reason=${encodeURIComponent(reason)}&birthdate=${encodeURIComponent(birthdate)}`;
+            window.location.href = url;
+        });
+    </script>
 </body>
 </html>
